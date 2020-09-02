@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.Options;
 using System.Security.Claims;
 using System.Security.Cryptography;
+using Microsoft.EntityFrameworkCore;
 
 namespace AuthorizationService
 {
@@ -30,9 +31,12 @@ namespace AuthorizationService
 
         public void ConfigureServices(IServiceCollection services)
         {
+            var connection = appConfig.GetConnectionString("DefaultConnection");
             var tokenSection = appConfig.GetSection("TokenSettings");
             var tokenSettings = tokenSection.Get<TokenSettings>();
             services.Configure<TokenSettings>(tokenSection);
+
+            services.AddDbContext<AuthDbContext>(options => options.UseSqlServer(connection));
 
             services.AddControllers()
                 .ConfigureApiBehaviorOptions(options => {
