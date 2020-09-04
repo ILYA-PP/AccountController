@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>AuthorizationService</name>
+    </assembly>
+    <members>
+        <member name="M:AuthorizationService.Models.AccountController.Login(System.String,System.String)">
+            <summary>
+            Подтверждение авторизации пользователя
+            </summary>
+            <param name="login"></param>
+            <param name="password"></param>
+            <response code="200">Код доступа успешно создан</response>
+            <response code="400">Неправильный ввод данных</response> 
+        </member>
+        <member name="M:AuthorizationService.Models.AccountController.RefreshToken">
+            <summary>
+            Обновить токен
+            </summary>
+            <response code="200">API токен</response>
+            <response code="401">Неверный RefreshToken</response> 
+        </member>
+        <member name="M:AuthorizationService.Models.AccountController.Logout">
+            <summary>
+            Разлогиниться 
+            </summary>
+            <response code="200">Успешный ответ</response>
+            <response code="400">Неверный RefreshToken</response>
+            <response code="401">Пользователь не аутентифицирован</response>
+        </member>
+    </members>
+</doc>

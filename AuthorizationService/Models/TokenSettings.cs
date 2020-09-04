@@ -14,7 +14,9 @@ namespace AuthorizationService.Models
         public string Audience { get; set; }
         public int AuthLifetime { get; set; }
         public CertificateSettings Certificate { get; set; }
+
         private X509Certificate2 _certificate;
+
         internal SecurityKey GetSecurityKey()
         {
             var certificate = GetCertificate();

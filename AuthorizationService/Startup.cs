@@ -17,6 +17,10 @@ using Microsoft.Extensions.Options;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Models;
+using System.Reflection;
+using System.IO;
+using Microsoft.IdentityModel.Logging;
 
 namespace AuthorizationService
 {
@@ -32,14 +36,15 @@ namespace AuthorizationService
         public void ConfigureServices(IServiceCollection services)
         {
             var connection = appConfig.GetConnectionString("DefaultConnection");
+            services.AddDbContext<AuthDbContext>(options => options.UseSqlServer(connection));
+
             var tokenSection = appConfig.GetSection("TokenSettings");
             var tokenSettings = tokenSection.Get<TokenSettings>();
             services.Configure<TokenSettings>(tokenSection);
 
-            services.AddDbContext<AuthDbContext>(options => options.UseSqlServer(connection));
-
             services.AddControllers()
-                .ConfigureApiBehaviorOptions(options => {
+                .ConfigureApiBehaviorOptions(options =>
+                {
                     options.SuppressMapClientErrors = true;
                     options.SuppressModelStateInvalidFilter = true;
                 });
@@ -94,6 +99,40 @@ namespace AuthorizationService
                     };
                 });
 
+            services.AddSwaggerGen(c => 
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "AOS Authorization Service", Version = "v0.01"});
+                c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme 
+                { 
+                    In = ParameterLocation.Header,
+                    Description = "Please insert JWT with Bearer into field",
+                    Name = "Authorization",
+                    Type = SecuritySchemeType.ApiKey
+                });
+                c.AddSecurityRequirement(new OpenApiSecurityRequirement() 
+                {
+                    { 
+                        new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference
+                            {
+                                Type = ReferenceType.SecurityScheme,
+                                Id = "Bearer"
+                            },
+                            Scheme = "jwt",
+                            Name = "Bearer",
+                            In = ParameterLocation.Header
+                        },
+                        new List<string>()
+                    }
+                });
+
+                var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+                var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+                c.IncludeXmlComments(xmlPath);
+            });
+
+            services.AddControllers();
             services.AddControllersWithViews();
         }
 
@@ -116,9 +155,18 @@ namespace AuthorizationService
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+                IdentityModelEventSource.ShowPII = true;
             }
 
+            app.UseStaticFiles();
+            app.UseSwagger();
+            app.UseSwaggerUI(options =>
+            {
+                options.SwaggerEndpoint("/swagger/v1/swagger.json", "AOS Admin API");
+            });
+
             app.UseRouting();
+            app.UseHttpsRedirection();
 
             app.UseAuthentication();
             app.UseAuthorization();
@@ -127,8 +175,6 @@ namespace AuthorizationService
             {
                 endpoints.MapControllers();
             });
-
-            app.UseStaticFiles();
         }
     }
 }

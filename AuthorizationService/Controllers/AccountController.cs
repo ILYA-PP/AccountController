@@ -17,14 +17,15 @@ using Microsoft.EntityFrameworkCore;
 namespace AuthorizationService.Models
 {
     [ApiController]
+    [Route("[controller]")]
     public class AccountController : ControllerBase
     {
         private TokenSettings _tokenSettings;
         private AuthDbContext _dbContext;
 
-        public AccountController(TokenSettings tokenSettings, AuthDbContext dbContext)
+        public AccountController(IOptions<TokenSettings> tokenSettings, AuthDbContext dbContext)
         {
-            _tokenSettings = tokenSettings;
+            _tokenSettings = tokenSettings.Value;
             _dbContext = dbContext;
         }
         //аналогично value controller
@@ -40,11 +41,12 @@ namespace AuthorizationService.Models
         /// <summary>
         /// Подтверждение авторизации пользователя
         /// </summary>
-        /// <param name="model"></param>
+        /// <param name="login"></param>
+        /// <param name="password"></param>
         /// <response code="200">Код доступа успешно создан</response>
         /// <response code="400">Неправильный ввод данных</response> 
         [HttpPost("/auth/confirm")]
-        public IActionResult Login(string login, string password)
+        public IActionResult Login([FromForm] string login, [FromForm] string password)
         {
             var user = _dbContext.Users.Include(r => r.RefreshTokens).SingleOrDefault(x => x.Login == login);
             if (user == null)
@@ -139,12 +141,12 @@ namespace AuthorizationService.Models
             _dbContext.SaveChanges();
             return Ok();
         }
-        private string IssueToken(string phone, string fgp)
+        private string IssueToken(string login, string fgp)
         {
 
             var claims = new Dictionary<string, object>
             {
-                { "phone", phone },
+                { "phone", login },
                 { "fgp", ComputeSha256Hash(fgp) },
             };
 

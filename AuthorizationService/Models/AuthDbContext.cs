@@ -13,10 +13,14 @@ namespace AuthorizationService.Models
 
         public DbSet<User> Users { get; set; }
         public DbSet<RefreshToken> RefreshTokens { get; set; }
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        { }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+            modelBuilder.Entity<User>().ToTable("User");
+            modelBuilder.Entity<RefreshToken>().ToTable("RefreshToken");
         }
     }
 }
