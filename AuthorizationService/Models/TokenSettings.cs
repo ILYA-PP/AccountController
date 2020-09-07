@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.ConstrainedExecution;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
@@ -26,7 +27,7 @@ namespace AuthorizationService.Models
 
         internal X509Certificate2 GetCertificate()
         {
-            if(Certificate == null)
+            if (Certificate == null)
                 throw new InvalidOperationException("JWT Certificate not configured");
 
             if (_certificate == null)

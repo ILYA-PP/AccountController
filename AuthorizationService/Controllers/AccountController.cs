@@ -1,18 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
+using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
+using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using AuthorizationService.Models;
-using Microsoft.CodeAnalysis.Options;
-using Microsoft.Extensions.Options;
-using Microsoft.AspNetCore.Authorization;
-using System.Text;
-using System.Security.Cryptography;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
+using AuthorizationService.Models;
 
 namespace AuthorizationService.Models
 {
@@ -146,7 +147,7 @@ namespace AuthorizationService.Models
 
             var claims = new Dictionary<string, object>
             {
-                { "phone", login },
+                { "login", login },
                 { "fgp", ComputeSha256Hash(fgp) },
             };
 
@@ -204,7 +205,7 @@ namespace AuthorizationService.Models
                     Token = Convert.ToBase64String(randomBytes),
                     Expires = DateTime.UtcNow.AddDays(30),
                     Created = DateTime.UtcNow,
-                    UserId = userId,
+                    UserId = userId
                 };
             }
         }
